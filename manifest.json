@@ -1,5 +1,5 @@
 {
-  "display_name": "My First Extension",
+  "display_name": "Fast Travel Map",
   "loading_order": 100,
   "requires": [],
   "optional": [],
@@ -7,6 +7,6 @@
   "css": "style.css",
   "author": "YourName",
   "version": "1.0.0",
-  "homePage": "https://github.com/yourusername/your-repo",
+  "homePage": "https://github.com/yourusername/fast-travel-map",
   "auto_update": true
 }

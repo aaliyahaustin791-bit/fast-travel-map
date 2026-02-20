@@ -1,0 +1,12 @@
+{
+  "display_name": "My First Extension",
+  "loading_order": 100,
+  "requires": [],
+  "optional": [],
+  "js": "index.js",
+  "css": "style.css",
+  "author": "YourName",
+  "version": "1.0.0",
+  "homePage": "https://github.com/yourusername/your-repo",
+  "auto_update": true
+}

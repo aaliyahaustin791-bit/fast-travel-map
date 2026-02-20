@@ -76,3 +76,48 @@
     display: none;
     z-index: 10001;
 }
+
+#ftm-canvas-container {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+}
+
+#ftm-fog-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    background: radial-gradient(
+        circle at var(--player-x, 50%) var(--player-y, 50%), 
+        transparent 10%, 
+        rgba(0,0,10,0.8) 40%
+    );
+}
+
+#ftm-controls-hint {
+    padding: 5px;
+    font-size: 10px;
+    color: #888;
+    text-align: center;
+    border-top: 1px solid var(--SmartThemeBorderColor, #444);
+}
+
+#ftm-discovered-count {
+    font-size: 0.8em;
+    color: #4CAF50;
+    margin-left: 5px;
+}
+
+/* Animation for new discoveries */
+@keyframes discoverPulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(2); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.ftm-new-discovery {
+    animation: discoverPulse 0.5s ease-in-out;
+}

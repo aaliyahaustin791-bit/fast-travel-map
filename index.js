@@ -119,6 +119,7 @@ function createMapContainer() {
         <div style="padding: 12px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; color: white; font-weight: bold;">
             <span>🗺️ World Map</span>
             <div style="display: flex; gap: 8px;">
+                <button id="ftm-generate" style="background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 14px;" title="Generate Fantasy Map">🎨</button>
                 <button id="ftm-clear" style="background: #444; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Clear</button>
                 <button id="ftm-close" style="background: #444; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer;">✕</button>
             </div>
@@ -133,6 +134,7 @@ function createMapContainer() {
     
     document.getElementById('ftm-close').onclick = () => container.style.display = 'none';
     document.getElementById('ftm-clear').onclick = clearWaypoints;
+    document.getElementById('ftm-generate').onclick = generateFantasyMap;
     
     canvas = document.getElementById('ftm-canvas');
     ctx = canvas.getContext('2d');
@@ -477,4 +479,112 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
     init();
+}
+
+// IMAGE GENERATION FEATURES
+
+let isGeneratingImage = false;
+
+function addImageGenButton() {
+    const header = container.querySelector('div[style*="padding: 12px"]');
+    if (document.getElementById('ftm-generate')) return;
+    
+    const btn = document.createElement('button');
+    btn.id = 'ftm-generate';
+    btn.innerHTML = '🎨';
+    btn.title = 'Generate Fantasy Map';
+    btn.style.cssText = `
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 8px;
+        font-size: 14px;
+    `;
+    
+    btn.onclick = generateFantasyMap;
+    header.insertBefore(btn, document.getElementById('ftm-clear'));
+}
+
+async function generateFantasyMap() {
+    if (isGeneratingImage) return;
+    
+    const discoveredWps = settings.waypoints.filter(isDiscovered);
+    if (discoveredWps.length === 0) {
+        notify('Discover some locations first!', 'Map Generation');
+        return;
+    }
+    
+    isGeneratingImage = true;
+    const btn = document.getElementById('ftm-generate');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳';
+    btn.style.opacity = '0.6';
+    
+    try {
+        // Build fantasy prompt from locations
+        const locationNames = discoveredWps.map(w => w.name).join(', ');
+        const prompt = `Fantasy RPG world map, top-down view, hand-drawn style, parchment texture, showing ${locationNames}, dotted paths connecting locations, forest and mountain terrain, medieval cartography, game map, 4k, detailed`;
+        
+        // Pollinations.ai API - free, no key required
+        const encodedPrompt = encodeURIComponent(prompt);
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=680&height=760&nologo=true&seed=${Date.now()}`;
+        
+        notify('Generating fantasy map...', 'Please wait');
+        
+        // Load image
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        
+        img.onload = () => {
+            mapImageObj = img;
+            
+            // Save to settings as data URL for persistence
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = 680;
+                canvas.height = 760;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                settings.mapImage = canvas.toDataURL('image/jpeg', 0.8);
+                saveSettingsDebounced();
+            } catch (e) {
+                console.log('[FTM] Could not save image to settings:', e);
+            }
+            
+            renderMap();
+            notify('Fantasy map generated!', 'Success');
+            isGeneratingImage = false;
+            btn.innerHTML = originalText;
+            btn.style.opacity = '1';
+        };
+        
+        img.onerror = () => {
+            notify('Failed to generate image. Try again!', 'Error');
+            isGeneratingImage = false;
+            btn.innerHTML = originalText;
+            btn.style.opacity = '1';
+        };
+        
+        // Add cache buster
+        img.src = imageUrl;
+        
+    } catch (error) {
+        console.error('[FTM] Image generation error:', error);
+        notify('Error generating map', 'Error');
+        isGeneratingImage = false;
+        btn.innerHTML = originalText;
+        btn.style.opacity = '1';
+    }
+}
+
+function removeMapImage() {
+    if (confirm('Remove generated map image?')) {
+        mapImageObj = null;
+        settings.mapImage = null;
+        saveSettingsDebounced();
+        renderMap();
+    }
 }

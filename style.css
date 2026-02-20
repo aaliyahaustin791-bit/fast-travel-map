@@ -1,0 +1,13 @@
+/* Fast Travel Map - Minimal Backup Styles */
+#ftm-fab {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+#ftm-container {
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+#ftm-canvas {
+    image-rendering: pixelated;
+}
